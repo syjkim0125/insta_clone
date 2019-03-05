@@ -1,2 +1,2 @@
 # insta_clone
-Flutter app, cloned instagram
+Flutter app, cloned simple instagram with Firebase
