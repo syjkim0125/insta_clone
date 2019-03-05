@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:insta_clone/create_page.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:insta_clone/detail_post_page.dart';
 
 class SearchPage extends StatefulWidget {
   final FirebaseUser user;
@@ -19,7 +21,10 @@ class _SearchPageState extends State<SearchPage> {
       body: _buildBody(),
       floatingActionButton: FloatingActionButton(
           onPressed: () {
-            Navigator.push(context, MaterialPageRoute(builder: (context) => CreatePage(widget.user)));
+            Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => CreatePage(widget.user)));
           },
           child: Icon(Icons.create),
           backgroundColor: Colors.blue),
@@ -27,21 +32,38 @@ class _SearchPageState extends State<SearchPage> {
   }
 
   Widget _buildBody() {
-    return GridView.builder(
-        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 3,
-            childAspectRatio: 1.0,
-            mainAxisSpacing: 1.0,
-            crossAxisSpacing: 1.0),
-        itemCount: 5,
-        itemBuilder: (context, index) {
-          return _buildListItem(context, index);
-        });
+    return StreamBuilder(
+      stream: Firestore.instance.collection('post').snapshots(),
+      builder: (BuildContext context, AsyncSnapshot snapshot) {
+        if (!snapshot.hasData) {
+          return Center(child: CircularProgressIndicator());
+        }
+        var items = snapshot.data?.documents ?? [];
+
+        return GridView.builder(
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 3,
+                childAspectRatio: 1.0,
+                mainAxisSpacing: 1.0,
+                crossAxisSpacing: 1.0),
+            itemCount: items.length,
+            itemBuilder: (context, index) {
+              return _buildListItem(context, items[index]);
+            });
+      },
+    );
   }
 
-  Widget _buildListItem(BuildContext context, int index) {
-    return Image.network(
-        'https://w.namu.la/s/4096979c867712ca5ccc2fc212bb71a6e2d81835025e3fca62341fe16357dc2086b66fc3247fe8eeecc1abb85097e7273a32085ec1d0ad1c5bc5c4a044a6742e6fd78b89aa539e32f95ec8b552a9c162dd859a32884686389f977b7da631bab8',
-        fit: BoxFit.cover);
+  Widget _buildListItem(BuildContext context, DocumentSnapshot document) {
+    return InkWell(
+        onTap: () {
+          Navigator.push(context, MaterialPageRoute(builder: (context) {
+            return DetailPostPage(document);
+          }));
+        },
+        child: Image.network(
+            document['photoUrl'],
+            fit: BoxFit.cover)
+    );
   }
 }

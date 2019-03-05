@@ -43,6 +43,7 @@ class _CreatePageState extends State<CreatePage> {
         IconButton(
           icon: Icon(Icons.send),
           onPressed: () {
+            //TODO 이미지 없을 시에 이미지가 업로드 되지 않았습니다 경고표시 혹은 이미지 없으면 그냥 doc에 url 제외하고 올라가게 수정
             final firebaseStorageRef = FirebaseStorage.instance
                 .ref()
                 .child('post')
@@ -50,6 +51,8 @@ class _CreatePageState extends State<CreatePage> {
 
             final task = firebaseStorageRef.putFile(
                 _image, StorageMetadata(contentType: 'image/png'));
+
+            //TODO 글 작성 클릭 시, 프로그레스 바 필요
 
             task.onComplete.then((value) {
               var downloadUrl = value.ref.getDownloadURL();
